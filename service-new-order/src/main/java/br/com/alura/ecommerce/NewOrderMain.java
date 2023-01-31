@@ -10,18 +10,26 @@ public class NewOrderMain {
         try (var orderDispatcher = new KafkaDispatcher<Order>()) {
             try (var emailDispatcher = new KafkaDispatcher<Email>()) { //para o e-mail
                 for (var i = 0; i < 10; i++) {
-
-                    var userId = UUID.randomUUID().toString(); //a chave decide em qual partição a mensagem vai cair
-                    var orderId = UUID.randomUUID().toString();
-                    var amount = new BigDecimal(Math.random() * 5000 + 1);
-                    var order = new Order(userId, orderId, amount);
-                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", userId, order);
-
-                    var text = "Thank you for your order! We are processing your order!";
-                    var email = new Email(text, "");
-                    emailDispatcher.send("ECOMMERCE_SEND_EMAIL", userId, email);
+                    String email = gerarVenda(orderDispatcher);
+                    enviarEmail(emailDispatcher, email);
                 }
             }
         }
+    }
+
+    private static void enviarEmail(KafkaDispatcher<Email> emailDispatcher, String email) throws ExecutionException, InterruptedException {
+        var text = "Thank you for your order! We are processing your order!";
+        var emailCode = new Email(text, "");
+        emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
+    }
+
+    private static String gerarVenda(KafkaDispatcher<Order> orderDispatcher) throws ExecutionException, InterruptedException {
+        var orderId = UUID.randomUUID().toString();
+        var amount = BigDecimal.valueOf(Math.random() * 5000 + 1);
+        var email = Math.random() + "@email.com";
+
+        var order = new Order(orderId, amount, email);
+        orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
+        return email;
     }
 }
