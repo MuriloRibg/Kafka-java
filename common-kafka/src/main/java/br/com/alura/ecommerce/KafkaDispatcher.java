@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 public class KafkaDispatcher<T> implements Closeable {
     private final KafkaProducer<String, T> producer;
 
-    KafkaDispatcher() {
+        KafkaDispatcher() {
         this.producer = new KafkaProducer<>(properties());
     }
 
@@ -22,6 +22,7 @@ public class KafkaDispatcher<T> implements Closeable {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092"); //criando as config de consumidor
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()); //transformar as strings em bytes
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GsonSerializer.class.getName()); //mensagem
+        properties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
         return properties;
     }
 
