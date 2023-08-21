@@ -11,9 +11,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 public class KafkaDispatcher<T> implements Closeable {
-    private final KafkaProducer<String, T> producer;
+    private final KafkaProducer<String, Message<T>> producer;
 
-        KafkaDispatcher() {
+    KafkaDispatcher() {
         this.producer = new KafkaProducer<>(properties());
     }
 
@@ -26,7 +26,8 @@ public class KafkaDispatcher<T> implements Closeable {
         return properties;
     }
 
-    public void send(String topic, String key, T value) throws ExecutionException, InterruptedException {
+    public void send(String topic, String key, T payload) throws ExecutionException, InterruptedException {
+        var value = new Message<>(new CorrelationId(), payload);
         var record = new ProducerRecord<>(topic, key, value); //local onde vai ser salvo as mensagens - (nome do tópico)
 
         Callback callback = (data, ex) -> {

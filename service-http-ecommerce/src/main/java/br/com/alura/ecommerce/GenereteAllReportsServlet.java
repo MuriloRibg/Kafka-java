@@ -20,7 +20,6 @@ public class GenereteAllReportsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         try {
-
             batchDispatcher.send("SEND_MASSAGE_TO_ALL_USERS", "USER_GENERATE_READING_REPORT", "USER_GENERATE_READING_REPORT");
 
             System.out.println("Sent generate report to all users.");

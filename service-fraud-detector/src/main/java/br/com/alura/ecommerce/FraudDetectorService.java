@@ -24,27 +24,30 @@ public class FraudDetectorService {
 
     private void parse(ConsumerRecord<String, Order> record) throws ExecutionException, InterruptedException {
         System.out.println("-----------------------------------------");
-        System.out.println("Processing new order, checking for fraud");
-        System.out.println(record.key());
-        System.out.println(record.value());
-        System.out.println(record.partition());
-        System.out.println(record.offset());
 
-        try {
-            Thread.sleep(5000); //colocando um tempo entre as thread para n estourar o processamento
-        } catch (InterruptedException e) {
-            // ignoring
-            e.printStackTrace();
-        }
+        throw new InterruptedException("");
 
-        var order = record.value();
-        if (isFraud(order)) {
-            System.out.println("Order is fraud!");
-            orderKafkaDispatcher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
-        } else {
-            System.out.println("Order processed.");
-            orderKafkaDispatcher.send("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
-        }
+//        System.out.println("Processing new order, checking for fraud");
+//        System.out.println(record.key());
+//        System.out.println(record.value());
+//        System.out.println(record.partition());
+//        System.out.println(record.offset());
+//
+//        try {
+//            Thread.sleep(5000); //colocando um tempo entre as thread para n estourar o processamento
+//        } catch (InterruptedException e) {
+//            // ignoring
+//            e.printStackTrace();
+//        }
+//
+//        var order = record.value();
+//        if (isFraud(order)) {
+//            System.out.println("Order is fraud!");
+//            orderKafkaDispatcher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
+//        } else {
+//            System.out.println("Order processed.");
+//            orderKafkaDispatcher.send("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
+//        }
     }
 
     private static boolean isFraud(Order order) {

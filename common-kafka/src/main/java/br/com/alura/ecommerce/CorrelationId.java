@@ -9,4 +9,11 @@ public class CorrelationId {
     CorrelationId() {
         id = UUID.randomUUID().toString();
     }
+
+    @Override
+    public String toString() {
+        return "CorrelationId{" +
+                "id='" + id + '\'' +
+                '}';
+    }
 }

@@ -32,6 +32,8 @@ public class KafkaService<T> implements Closeable {
         this.consumer = new KafkaConsumer<>(getProperties(classType, simpleName, properties)); //criando a propriedade e passando o tipo
     }
 
+
+
     public void run() {
         while (true) {
             var records = consumer.poll(Duration.ofMillis(100)); //tempo de escuta
@@ -58,7 +60,6 @@ public class KafkaService<T> implements Closeable {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, simpleName);
         properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
-        properties.setProperty(GsonDeserializer.TYPE_CONFIG, classType.getName());
         properties.putAll(overridProperties); // adiciona as outras propriedades
 
         return properties;
