@@ -18,21 +18,18 @@ public class BatchSendMessageService {
         String url = "jdbc:sqlite:service-users/target/users_database.db";
         this.connection = DriverManager.getConnection(url);
         try {
-            connection.createStatement().execute("CREATE TABLE USERS (" +
-                    "UUID VARCHAR(200) PRIMARY KEY, " +
-                    "EMAIL VARCHAR(200) NOT NULL)");
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS USERS (UUID VARCHAR(200) PRIMARY KEY, EMAIL VARCHAR(200) NOT NULL)");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         var batchSendMessageService = new BatchSendMessageService();
         try (var service = new KafkaService<>(
                 BatchSendMessageService.class.getSimpleName(),
-                "SEND_MASSAGE_TO_ALL_USERS",
+                "ECOMMERCE_SEND_MASSAGE_TO_ALL_USERS",
                 batchSendMessageService::parse,
-                String.class,
                 new HashMap<>())) { //o map é opcional, e por isso está vazio
             service.run();
         }
@@ -40,16 +37,22 @@ public class BatchSendMessageService {
 
     private final KafkaDispatcher<User> userKafkaDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, String> record) throws ExecutionException, InterruptedException, SQLException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException {
+        Message<String> message = record.value();
+
         System.out.println("-----------------------------------------");
         System.out.println("Processing new batch");
         System.out.println("Topic: " + record.key());
-        System.out.println(record.value());
+        System.out.println(message);
         System.out.println(record.partition());
         System.out.println(record.offset());
 
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.send(record.value(), user.getUuid(), user);
+            userKafkaDispatcher.sendAsync(
+                    message.getPayload(),
+                    user.getUuid(),
+                    message.getId().continueWith(BatchSendMessageService.class.getSimpleName()),
+                    user);
         }
     }
 

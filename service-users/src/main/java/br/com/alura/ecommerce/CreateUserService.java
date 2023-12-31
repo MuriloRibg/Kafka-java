@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class CreateUserService {
 
@@ -17,27 +18,24 @@ public class CreateUserService {
         String url = "jdbc:sqlite:service-users/target/users_database.db";
         this.connection = DriverManager.getConnection(url);
         try {
-            connection.createStatement().execute("CREATE TABLE USERS (" +
-                    "UUID VARCHAR(200) PRIMARY KEY, " +
-                    "EMAIL VARCHAR(200) NOT NULL)");
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS USERS (UUID VARCHAR(200) PRIMARY KEY, EMAIL VARCHAR(200) NOT NULL)");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         var createUserService = new CreateUserService();
         try (var service = new KafkaService<Order>(
                 CreateUserService.class.getSimpleName(),
                 "ECOMMERCE_NEW_ORDER",
                 createUserService::parse,
-                Order.class,
                 new HashMap<>())) { //o map é opcional, e por isso está vazio
             service.run();
         }
     }
 
-    private void parse(ConsumerRecord<String, Order> record) throws SQLException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
         System.out.println("-----------------------------------------");
         System.out.println("Processing new order, checking for new user.");
         System.out.println(record.key());
@@ -45,7 +43,7 @@ public class CreateUserService {
         System.out.println(record.partition());
         System.out.println(record.offset());
 
-        var order = record.value();
+        var order = record.value().getPayload();
         if (isNewUser(order.getEmail())) {
             insertNewUser(order.getEmail());
         }

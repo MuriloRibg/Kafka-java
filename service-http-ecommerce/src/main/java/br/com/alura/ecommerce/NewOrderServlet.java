@@ -1,6 +1,5 @@
 package br.com.alura.ecommerce;
 
-import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +38,7 @@ public class NewOrderServlet extends HttpServlet {
     private static void enviarEmail(KafkaDispatcher<Email> emailDispatcher, String email) throws ExecutionException, InterruptedException {
         var text = "Thank you for your order! We are processing your order!";
         var emailCode = new Email(text, "");
-        emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
+        emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), emailCode);
     }
 
     private static String gerarVenda(HttpServletRequest req, KafkaDispatcher<Order> orderDispatcher) throws ExecutionException, InterruptedException {
@@ -49,7 +48,7 @@ public class NewOrderServlet extends HttpServlet {
         var email = req.getParameter("email");
 
         var order = new Order(orderId, amount, email);
-        orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
+        orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), order);
         return email;
     }
 }

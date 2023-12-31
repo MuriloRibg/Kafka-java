@@ -13,20 +13,19 @@ public class ReadingReportService {
 
     private static final Path SOURCE = new File("src/main/resources/report.txt").toPath();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         var reportService = new ReadingReportService();
         try (var service = new KafkaService<User>(
                 ReadingReportService.class.getSimpleName(),
-                "USER_GENERATE_READING_REPORT",
+                "ECOMMERCE_USER_GENERATE_READING_REPORT",
                 reportService::parse,
-                User.class,
                 new HashMap<>())) { //o map é opcional, e por isso está vazio
             service.run();
         }
     }
 
-    private void parse(ConsumerRecord<String, User> record) throws IOException {
-        var user = record.value();
+    private void parse(ConsumerRecord<String, Message<User>> record) throws IOException {
+        User user = record.value().getPayload();
         System.out.println("-----------------------------------------");
         System.out.println("Processing report for " + user);
 

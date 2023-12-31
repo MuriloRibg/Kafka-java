@@ -20,7 +20,7 @@ public class NewOrderMain {
     private static void enviarEmail(KafkaDispatcher<Email> emailDispatcher, String email) throws ExecutionException, InterruptedException {
         var text = "Thank you for your order! We are processing your order!";
         var emailCode = new Email(text, "");
-        emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
+        emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderMain.class.getSimpleName()), emailCode);
     }
 
     private static String gerarVenda(KafkaDispatcher<Order> orderDispatcher) throws ExecutionException, InterruptedException {
@@ -29,7 +29,7 @@ public class NewOrderMain {
         var email = Math.random() + "@email.com";
 
         var order = new Order(orderId, amount, email);
-        orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
+        orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderMain.class.getSimpleName()), order);
         return email;
     }
 }
